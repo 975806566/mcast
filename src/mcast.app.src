@@ -1,0 +1,16 @@
+{application, mcast,
+ [
+  {description, ""},
+  {vsn, "0.2"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  compiler,
+                  syntax_tools,
+                  goldrush,
+                  lager
+                 ]},
+  {mod, { mcast_app, []}},
+  {env, []}
+ ]}.
