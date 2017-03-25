@@ -10,6 +10,7 @@
 -export([init/1]).
 
 -include("off_msg.hrl").
+-include("emqttd.hrl").
 
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
@@ -99,7 +100,7 @@ init([]) ->
     % ------------------------------------------------------------------------
     OffMsgIndexCache = {off_msg_index_sup, {off_msg_index_sup, start_link, []}, permanent, 5000, supervisor, [ off_msg_index_sup ]},
 
-    {ok, {{one_for_all, 10, 100}, [OffMsgTmpDS, OffMsgIndexDS, OffMgrTmp, OffMgrOff, MysqlDrive, OffMsgTmpCCS, OffMsgIndexCCS, OffMsgTmpCache, OffMsgIndexCache ]}}.
+    {ok, {{one_for_all, 10, 100}, [MysqlDrive, OffMsgTmpDS, OffMsgIndexDS, OffMgrTmp, OffMgrOff,  OffMsgTmpCCS, OffMsgIndexCCS, OffMsgTmpCache, OffMsgIndexCache ]}}.
 
 new_off_msg_mgr_ets() ->
     ets:new( ?OFF_MSG_MGR_ETS, [named_table, public, set]).
@@ -108,9 +109,13 @@ new_off_msg_mgr_ets() ->
 % @doc 创建mnesia集群的表
 % ------------------------------------------------------------
 create_all_tables ( Nodes ) ->
-    util:create_or_copy_table( off_msg_tmp,   [{ram_copies, Nodes}, {attributes, record_info(fields, off_msg_tmp)}], ram_copies),
-    util:create_or_copy_table( off_msg_index, [{ram_copies, Nodes}, {attributes, record_info(fields, off_msg_index)}], ram_copies),
-    mnesia:wait_for_tables([ off_msg_tmp, off_msg_index ], 600 * 1000).
+
+    util:create_or_copy_table( off_msg_tmp,   [{ram_copies, Nodes}, {attributes, record_info(fields, off_msg_tmp)}],    ram_copies),
+    util:create_or_copy_table( off_msg_index, [{ram_copies, Nodes}, {attributes, record_info(fields, off_msg_index)}],  ram_copies),
+    util:create_or_copy_table( users,         [{ram_copies, Nodes}, {attributes, record_info(fields, users)}],          ram_copies),
+    util:create_or_copy_table( user_info,     [{ram_copies, Nodes}, {attributes, record_info(fields, user_info)}],      ram_copies),
+
+    mnesia:wait_for_tables([ off_msg_tmp, off_msg_index, users, user_info ], 600 * 1000).
 
 % ------------------------------------------------------------
 % @doc 连接上需要集群的 nodes
